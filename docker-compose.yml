@@ -1,0 +1,62 @@
+version: "3.8"
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: chartdb-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: chartdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Rust Backend API
+  backend:
+    build:
+      context: ./chartdb-backend
+      dockerfile: Dockerfile
+    container_name: chartdb-backend
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/chartdb
+      RUST_LOG: info
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Frontend (Vite/React)
+  frontend:
+    build:
+      context: ./chartdb-frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_SYNC_API_URL: http://localhost:3000
+        VITE_OPENAI_API_KEY: ${VITE_OPENAI_API_KEY:-}
+        VITE_OPENAI_API_ENDPOINT: ${VITE_OPENAI_API_ENDPOINT:-}
+        VITE_LLM_MODEL_NAME: ${VITE_LLM_MODEL_NAME:-}
+        VITE_HIDE_CHARTDB_CLOUD: ${VITE_HIDE_CHARTDB_CLOUD:-false}
+        VITE_DISABLE_ANALYTICS: ${VITE_DISABLE_ANALYTICS:-false}
+    container_name: chartdb-frontend
+    environment:
+      VITE_SYNC_API_URL: http://localhost:3000
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local

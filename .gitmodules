@@ -1,0 +1,6 @@
+[submodule "chartdb-frontend"]
+	path = chartdb-frontend
+	url = git@github.me:ltdthanhdat/chartdb-frontend.git
+[submodule "chartdb-backend"]
+	path = chartdb-backend
+	url = git@github.me:ltdthanhdat/chartdb-backend.git
