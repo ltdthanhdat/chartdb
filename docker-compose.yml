@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   # PostgreSQL Database
   postgres:
@@ -50,7 +48,12 @@ services:
         VITE_DISABLE_ANALYTICS: ${VITE_DISABLE_ANALYTICS:-false}
     container_name: chartdb-frontend
     environment:
-      VITE_SYNC_API_URL: http://localhost:3000
+      SYNC_API_URL: http://localhost:3000
+      OPENAI_API_KEY: ${VITE_OPENAI_API_KEY:-}
+      OPENAI_API_ENDPOINT: ${VITE_OPENAI_API_ENDPOINT:-}
+      LLM_MODEL_NAME: ${VITE_LLM_MODEL_NAME:-}
+      HIDE_CHARTDB_CLOUD: ${VITE_HIDE_CHARTDB_CLOUD:-false}
+      DISABLE_ANALYTICS: ${VITE_DISABLE_ANALYTICS:-false}
     ports:
       - "8080:80"
     depends_on:
